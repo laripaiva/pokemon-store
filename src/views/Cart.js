@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
 import {
@@ -9,6 +9,9 @@ import {
 	ListItem,
 	ListItemText,
 	Button,
+	Snackbar,
+	Backdrop,
+	CircularProgress,
 } from "@material-ui/core";
 import Rating from "@material-ui/lab/Rating";
 import { makeStyles } from "@material-ui/core/styles";
@@ -18,15 +21,33 @@ function Cart() {
 	const loggedUser = useSelector((state) => state.user.email);
 	const theme = useSelector((state) => state.theme.name);
 	const items = useSelector((state) => state.cart);
+	const [loading, setLoading] = useState(true);
+	const [snackbar, setSnackbar] = useState(false);
+	const [open, setOpen] = React.useState(false);
 	const styles = useStyle();
 	const dispatch = useDispatch();
 	const history = useHistory();
 
 	useEffect(() => {
+		setLoading(true);
 		if (loggedUser === undefined) {
 			history.push("/login");
 		}
-	});
+		if (theme === "poison") {
+			if (items.length > 0) {
+				localStorage.setItem("POISON_CART", JSON.stringify(items));
+			} else {
+				localStorage.removeItem("POISON_CART");
+			}
+		} else if (theme === "ice") {
+			if (items.length > 0) {
+				localStorage.setItem("ICE_CART", JSON.stringify(items));
+			} else {
+				localStorage.removeItem("ICE_CART");
+			}
+		}
+		setLoading(false);
+	}, [theme, items, loggedUser, history]);
 
 	function capitalizeString(string) {
 		if (string !== null) {
@@ -34,6 +55,28 @@ function Cart() {
 		} else {
 			return string;
 		}
+	}
+
+	function buyPokemon() {
+		for (const item of items) {
+			let name = item.name;
+			dispatch({
+				type: "REMOVE_ITEM_CART",
+				name: name,
+			});
+		}
+
+		if (theme === "poison") {
+			localStorage.removeItem("POISON_CART");
+		} else if (theme === "ice") {
+			localStorage.removeItem("ICE_CART");
+		}
+
+		setOpen(true);
+		setTimeout(() => setOpen(false), 1500);
+		setTimeout(() => setSnackbar(true), 1500);
+		setTimeout(() => setSnackbar(false), 2000);
+		setTimeout(() => history.push("/"), 2500);
 	}
 
 	function standardizePrice(price, fakeDiscount) {
@@ -48,6 +91,8 @@ function Cart() {
 			type: "REMOVE_ITEM_CART",
 			name: name,
 		});
+
+		console.log(items);
 	}
 
 	return (
@@ -63,68 +108,71 @@ function Cart() {
 				</Typography>
 			</Grid>
 			{items.length > 0 && (
-				<Grid item xs={12} sm={8} className={styles.card}>
-					{items.map((item, i) => (
-						<div key={i}>
-							<Card variant="outlined">
-								<Grid container>
-									<Grid item xs={3} className={styles.centralizedContent}>
-										<Avatar url={item.product.url}></Avatar>
-									</Grid>
-									<Grid item xs={9}>
-										<Typography
-											className={styles.header}
-											variant="overline"
-											component="span"
-											noWrap={false}
+				<Grid item xs={12} sm={7} className={styles.card}>
+					{items.length > 0 && !loading && (
+						<div>
+							{items.map((item, i) => (
+								<Card variant="outlined" key={i}>
+									<Grid container>
+										<Grid
+											item
+											xs={12}
+											sm={6}
+											className={styles.centralizedContent}
 										>
-											{capitalizeString(item.product.name)}
-										</Typography>
-										<List>
-											<ListItem style={{ padding: 0, margin: 0 }}>
-												<ListItemText
-													classes={{
-														primary: styles.primary,
-														secondary: styles.secondary,
-													}}
-													primary={standardizePrice(item.product.price, 10)}
-													secondary={standardizePrice(item.product.price, 0)}
-												/>
-											</ListItem>
-										</List>
-										<Rating
-											className={styles.rating}
-											value={item.product.rating}
-											size="small"
-											readOnly
-										/>
+											<Grid item xs={5}>
+												<Avatar url={item.product.url}></Avatar>
+											</Grid>
+										</Grid>
+										<Grid item xs={12} sm={6} className={styles.container}>
+											<Typography
+												className={styles.header}
+												variant="overline"
+												component="span"
+												noWrap={false}
+											>
+												{capitalizeString(item.product.name)}
+											</Typography>
+											<List style={{ padding: 0, margin: 0 }}>
+												<ListItem style={{ padding: 0, margin: 0 }}>
+													<ListItemText
+														classes={{
+															primary: styles.primary,
+															secondary: styles.secondary,
+														}}
+														primary={standardizePrice(item.product.price, 10)}
+														secondary={standardizePrice(item.product.price, 0)}
+													/>
+												</ListItem>
+											</List>
+											<Rating
+												className={styles.rating}
+												value={item.product.rating}
+												size="small"
+												readOnly
+												style={{ padding: 0, margin: 0 }}
+											/>
+											<div onClick={() => removeCart(item)}>
+												<Typography
+													className={styles.delete}
+													variant="subtitle2"
+													component="span"
+													gutterBottom
+												>
+													Remover
+												</Typography>
+											</div>
+										</Grid>
 									</Grid>
-									<Grid item xs={12}>
-										<Button
-											onClick={() => removeCart(item)}
-											className={
-												theme === "poison"
-													? styles.poisonButton
-													: styles.iceButton
-											}
-											variant="contained"
-											disableElevation
-										>
-											REMOVER
-										</Button>
-									</Grid>
-								</Grid>
-							</Card>
+								</Card>
+							))}
 						</div>
-					))}
+					)}
 				</Grid>
 			)}
-
-			{/* <Grid item xs={12} sm={6} className={styles.divider}>
-				<Divider></Divider>
-			</Grid> */}
-			<Grid item xs={12} sm={4} className={styles.buttonContainer}>
+			<Grid item xs={12} sm={5} className={styles.centralizedContent}>
 				<Button
+					onClick={() => buyPokemon()}
 					className={
 						theme === "poison" ? styles.poisonButton : styles.iceButton
 					}
@@ -134,6 +182,19 @@ function Cart() {
 				>
 					Finalizar compra
 				</Button>
+			</Grid>
+			<Grid item>
+				<Snackbar
+					anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+					open={snackbar}
+					onClose={() => setSnackbar(false)}
+					message="Compra realizada"
+				/>
+			</Grid>
+			<Grid item>
+				<Backdrop className={styles.backdrop} open={open}>
+					<CircularProgress color="inherit" />
+				</Backdrop>
 			</Grid>
 		</Grid>
 	);
@@ -221,10 +282,14 @@ const useStyle = makeStyles((theme) => ({
 		color: "#777777",
 		textDecoration: "line-through",
 	},
-	buttonContainer: {
-		marginBottom: theme.spacing(3),
-		display: "flex",
-		alignItems: "center",
-		justifyContent: "center",
+	delete: {
+		fontSize: 12,
+		color: "#777777",
+		margin: 0,
+		padding: 0,
+	},
+	backdrop: {
+		zIndex: theme.zIndex.drawer + 1,
+		color: "#fff",
 	},
 }));

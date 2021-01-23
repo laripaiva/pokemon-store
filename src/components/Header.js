@@ -207,14 +207,14 @@ export default function Header() {
 							</Typography>
 						</MenuItem>
 					)}
-					{loggedUser !== undefined && <Divider></Divider>}
+					{/* {loggedUser !== undefined && <Divider></Divider>}
 					{loggedUser !== undefined && (
 						<MenuItem onClick={handleClose}>
 							<Typography variant="button" display="block" gutterBottom>
 								Meus pedidos
 							</Typography>
 						</MenuItem>
-					)}
+					)} */}
 					{loggedUser !== undefined && <Divider></Divider>}
 					{loggedUser !== undefined && (
 						<MenuItem onClick={() => logout()}>

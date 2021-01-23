@@ -40,22 +40,26 @@ export default function Login() {
 	}
 
 	function login(email) {
-		const users = JSON.parse(localStorage.getItem("USERS"));
-		const userExists = users.find((user) => user.email === email);
-		if (userExists === undefined) {
-			setEmailError("Email não cadastrado.");
+		if (localStorage.getItem("USERS")) {
+			const users = JSON.parse(localStorage.getItem("USERS"));
+			const userExists = users.find((user) => user.email === email);
+			if (userExists === undefined) {
+				setEmailError("Email não cadastrado.");
+			} else {
+				dispatch({
+					type: "SET_NAME",
+					name: userExists.name,
+				});
+
+				dispatch({
+					type: "SET_EMAIL",
+					email: userExists.email,
+				});
+
+				localStorage.setItem("LOGGED_USER", JSON.stringify(userExists));
+			}
 		} else {
-			dispatch({
-				type: "SET_NAME",
-				name: userExists.name,
-			});
-
-			dispatch({
-				type: "SET_EMAIL",
-				email: userExists.email,
-			});
-
-			localStorage.setItem("LOGGED_USER", JSON.stringify(userExists));
+			setEmailError("Email não cadastrado.");
 		}
 	}
 

@@ -11,6 +11,7 @@ import {
 	ListItem,
 	ListItemText,
 	Button,
+	Snackbar,
 } from "@material-ui/core";
 import Rating from "@material-ui/lab/Rating";
 import { makeStyles } from "@material-ui/core/styles";
@@ -23,6 +24,7 @@ function Product() {
 		useSelector((state) => state.product.product)
 	);
 	const [pokemonInfo, setPokemonInfo] = useState(null);
+	const [snackbar, setSnackbar] = useState(false);
 	const [image, setImage] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const styles = useStyle();
@@ -51,6 +53,7 @@ function Product() {
 			type: "ADD_ITEM_CART",
 			pokemon: pokemon,
 		});
+		setSnackbar(true);
 	}
 
 	useEffect(() => {
@@ -137,6 +140,14 @@ function Product() {
 
 	return (
 		<Grid container className={styles.root}>
+			<Grid item>
+				<Snackbar
+					anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+					open={snackbar}
+					onClose={() => setSnackbar(false)}
+					message="Pokémon adicionado na cesta!"
+				/>
+			</Grid>
 			{!loading && (
 				<Grid item xs={12} md={8} className={styles.container}>
 					<Card className={styles.card} elevation={0} variant="outlined">
