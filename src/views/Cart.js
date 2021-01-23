@@ -171,17 +171,21 @@ function Cart() {
 				</Grid>
 			)}
 			<Grid item xs={12} sm={5} className={styles.centralizedContent}>
-				<Button
-					onClick={() => buyPokemon()}
-					className={
-						theme === "poison" ? styles.poisonButton : styles.iceButton
-					}
-					variant="contained"
-					disableElevation
-					size="large"
-				>
-					Finalizar compra
-				</Button>
+				<Card variant="outlined">
+					{items.length > 0 && (
+						<Button
+							onClick={() => buyPokemon()}
+							className={
+								theme === "poison" ? styles.poisonButton : styles.iceButton
+							}
+							variant="contained"
+							disableElevation
+							size="large"
+						>
+							Finalizar compra
+						</Button>
+					)}
+				</Card>
 			</Grid>
 			<Grid item>
 				<Snackbar
